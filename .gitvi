@@ -1,0 +1,3 @@
+[Dependencies]
+required = savi/king, savi/horse
+optional =

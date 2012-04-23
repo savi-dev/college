@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Copyright (c) 2012, The SAVI Project. All rights reserved.
+
+  PROJECTNAME
+  Main ivy file.
+
+  Hesam Rahimi Koopayi <hesam.rahimikoopayi@utoronto.ca>
+-->
+<ivy-module version="2.0">
+  <info organisation="ca.savi" module="college"/>
+  <dependencies>
+    <dependency org="commons-cli" name="commons-cli" rev="1.2" />
+    <dependency org="commons-lang" name="commons-lang" rev="2.5" />
+    <dependency org="commons-logging" name="commons-logging" rev="1.1.1" />
+    <dependency org="commons-collections" name="commons-collections"
+        rev="3.2" />
+    <dependency org="log4j" name="log4j" rev="1.2.16" />
+    <dependency org="junit" name="junit" rev="4.10" />
+    <dependency org="com.sun.xml.ws" name="jaxws-tools" rev="2.1.4" />
+  </dependencies>
+</ivy-module>

@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Copyright (c) 2012, The SAVI Project. All rights reserved.
+
+  College
+  DESCRIPTION
+
+  Hesam Rahimi Koopayi <hesam.rahimikoopayi@utoronto.ca>
+-->
+<project name="college" default="all"
+    xmlns:ivy="antlib:org.apache.ivy.ant">
+  <description>
+    DESCRIPTION
+  </description>
+
+  <!-- TODO: Fill these variables. -->
+  <property name="PROJECT_NAME" value="college" />
+  <property name="VERSION" value="0.1" />
+  <property name="TEST_SUITE_CLASS" value="ca.savi.PROJ.test.TestSuite" />
+  <property name="MAIN_CLASS" value="ca.savi.college.client.Main" />
+
+  <property name="DEBUG" value="true" />
+
+  <!-- DIRECTORIES -->
+  <property name="SAVI_HOME" value="../" />
+  <property name="PROJECT_HOME" value="./" />
+  <property name="HORSE_HOME" value="${SAVI_HOME}/horse" />
+  <property name="KING_HOME" value="${SAVI_HOME}/king/" />
+
+  <property name="BUILD_DIR" value="${PROJECT_HOME}/build/" />
+  <property name="CLASSES_DIR" value="${PROJECT_HOME}/build/classes/" />
+  <property name="DIST_DIR" value="${PROJECT_HOME}/dist/" />
+  <property name="GEN_DIR" value="${PROJECT_HOME}/build/gen-src/" />
+  <property name="GEN_SRC_DIR" value="${PROJECT_HOME}/${GEN_DIR}/java/" />
+  <property name="GEN_RES_DIR" value="${PROJECT_HOME}/${GEN_DIR}/resources/" />
+  <property name="LIB_DIR" value="${PROJECT_HOME}/build/lib/" />
+  <property name="RESOURCES_DIR" value="resources/" />
+  <property name="SRC_DIR" value="${PROJECT_HOME}/src/java/" />
+  <property name="SRC_TEST_DIR" value="${PROJECT_HOME}/test/java/" />
+  <property name="HORSE_LIB_DIR" value="${HORSE_HOME}/build/lib/" />
+  <property name="HORSE_CLASSES_DIR" value="${HORSE_HOME}/build/classes" />
+  <property name="KING_LIB_DIR" value="${KING_HOME}/build/lib/" />
+  <property name="KING_CLASSES_DIR" value="${KING_HOME}/build/classes" />
+
+  <!-- CLASSPATH -->
+  <path id="classpath.lib">
+    <fileset dir="${LIB_DIR}" includes="*.jar" />
+    <fileset dir="${KING_LIB_DIR}" includes="*.jar" />
+    <fileset dir="${HORSE_LIB_DIR}" includes="*.jar" />
+    <pathelement location="${KING_CLASSES_DIR}" />
+    <pathelement location="${HORSE_CLASSES_DIR}" />
+  </path>
+
+  <path id="classpath.all">
+    <path refid="classpath.lib" />
+    <pathelement location="${CLASSES_DIR}" />
+  </path>
+
+  <!-- TARGETS -->
+  <target name="all" depends="build">
+  </target>
+<!--
+  <target name="copyjars" description="Copies the App Engine JARs.">
+    <copy todir="${LIB_DIR}" flatten="true">
+      <fileset dir="${KING_LIB_DIR}" includes="*.jar" />
+      <fileset dir="${KING_DIST_DIR}" includes="*.jar" />
+      <fileset dir="${HORSE_LIB_DIR}" includes="*.jar" />
+      <fileset dir="${HORSE_DIST_DIR}" includes="*.jar" />
+    </copy>
+  </target>
+-->
+  <target name="dist" depends="build">
+    <manifestclasspath property="lib.list"
+        jarfile="${DIST_DIR}/${PROJECT_NAME}-${VERSION}.jar">
+      <classpath refid="classpath.lib" />
+    </manifestclasspath>
+    <jar destfile="${DIST_DIR}/${PROJECT_NAME}-${VERSION}.jar">
+      <fileset dir="${CLASSES_DIR}">
+        <include name="**/*"/>
+      </fileset>
+      <manifest>
+        <attribute name="Main-Class" value="${MAIN_CLASS}" />
+        <attribute name="Class-Path" value="${lib.list}" />
+      </manifest>
+    </jar>
+  </target>
+
+  <target name="build" depends="deps">
+    <javac srcdir="${SRC_DIR}:${GEN_SRC_DIR}"
+        includeantruntime="false" destdir="${CLASSES_DIR}" debug="${DEBUG}">
+      <classpath refid="classpath.lib" />
+    </javac>
+    <copy todir="${CLASSES_DIR}">
+      <fileset dir="${RESOURCES_DIR}">
+        <include name="**/*" />
+      </fileset>
+    </copy>
+  </target>
+
+  <target name="test" depends="build-test">
+    <junit>
+      <classpath refid="classpath.all" />
+      <formatter type="brief" usefile="false" />
+      <test name="${TEST_SUITE_CLASS}" />
+    </junit>
+  </target>
+
+  <target name="build-test" depends="build">
+    <javac srcdir="${SRC_TEST_DIR}:${GEN_SRC_DIR}"
+        includeantruntime="false" destdir="${CLASSES_DIR}" debug="${DEBUG}">
+      <classpath refid="classpath.lib" />
+    </javac>
+  </target>
+
+  <target name="deps" depends="prepare">
+    <ivy:configure file="ivy-settings.xml" override="true"/>
+    <ivy:retrieve refresh="true" type="jar,bundle"
+        pattern="${LIB_DIR}/[artifact].[ext]" />
+  </target>
+
+  <target name="prepare">
+    <mkdir dir="${BUILD_DIR}" />
+    <mkdir dir="${CLASSES_DIR}" />
+    <mkdir dir="${DIST_DIR}" />
+    <mkdir dir="${GEN_DIR}" />
+    <mkdir dir="${GEN_SRC_DIR}" />
+    <mkdir dir="${LIB_DIR}" />
+    <ant antfile="${KING_HOME}/build.xml" inheritall="false"
+        inheritrefs="false" target="dist" />
+    <ant antfile="${HORSE_HOME}/build.xml" inheritall="false"
+        inheritrefs="false" target="dist" />
+  </target>
+
+  <target name="clean">
+    <delete dir="${BUILD_DIR}">
+    </delete>
+    <delete dir="${DIST_DIR}">
+    </delete>
+  </target>
+</project>
