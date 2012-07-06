@@ -6,8 +6,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
@@ -27,14 +25,15 @@ import ca.savi.horse.model.hwparams.GenericOpRequestParams;
 import ca.savi.horse.model.hwparams.GetRequestParams;
 import ca.savi.horse.model.hwparams.InitRequestParams;
 import ca.savi.horse.model.hwparams.ListRequestParams;
-import ca.savi.horse.model.hwparams.ProgramRequestParams;
 import ca.savi.horse.model.hwparams.ReleaseRequestParams;
 import ca.savi.horse.model.hwparams.StatusResponseParams;
 import ca.savi.king.client.SaviCLI;
-import ca.savi.king.ws.StorageGetFileResponse;
+import ca.savi.king.ws.ResourceConnectToNetworkResponse;
+import ca.savi.king.ws.ResourceDisconnectFromNetworkResponse;
+import ca.savi.king.ws.ResourceProgramResponse;
 
 /**
- * This is Hardware Resource Client.
+ * This is Hardware Resource Client
  * @author Hesam Rahimi Koopayi <hesam.rahimikoopayi@utoronto.ca>
  * @version 0.1
  */
@@ -74,9 +73,11 @@ public class CHwCLI extends SaviCLI {
     opt.addOption("r", true, "res_type");
     opt.addOption("h", true, "help");
     opt.addOption("uu", true, "uuid");
-    opt.addOption("a", true, "image_file");
-    opt.addOption("f", true, "key_file");
     opt.addOption("x", true, "xml");
+    opt.addOption("puu", true, "port_uuid");
+    opt.addOption("nuu", true, "net_uuid");
+    opt.addOption("npuu", true, "netport_uuid");
+    opt.addOption("iuu", true, "image_uuid");
     // opt.addOption("a", true, "bitfile_path"); // the path of the bit file
     // subject to be programmed on the
     // FPGA. This file should be on
@@ -108,14 +109,16 @@ public class CHwCLI extends SaviCLI {
     String command = cmd.getOptionValue("c");
     String user = cmd.getOptionValue("u");
     String password = cmd.getOptionValue("p");
-    String aorName = cmd.getOptionValue("l");
-    String planName = cmd.getOptionValue("j");
+    String nodeName = cmd.getOptionValue("l");
+    String tenantName = cmd.getOptionValue("j");
     String uuid = cmd.getOptionValue("uu");
-    String imageFile = cmd.getOptionValue("a");
-    String keyFile = cmd.getOptionValue("f");
     // from my own
     // String bitFilePath = cmd.getOptionValue("a");
     String reg_value = cmd.getOptionValue("v");
+    String portUuid = cmd.getOptionValue("puu");
+    String networkUuid = cmd.getOptionValue("nuu");
+    String networkPortUuid = cmd.getOptionValue("npuu");
+    String imageUuid = cmd.getOptionValue("iuu");
     // end
     if (command == null) {
       printHelp();
@@ -134,51 +137,74 @@ public class CHwCLI extends SaviCLI {
     }
     // from my own
     if (command.equals("init_res")) {
-      hwCLIinitializeHardware(user, password, aorName);
+      hwCLIinitializeHardware(user, password, nodeName);
     } else if (command.equals("read_res")) {
-      hwCLIreadFromRegister(user, password, aorName, uuid);
+      hwCLIreadFromRegister(user, password, nodeName, uuid);
     } else if (command.equals("write_res")) {
-      hwCLIwriteToRegister(user, password, aorName, uuid, reg_value);
+      hwCLIwriteToRegister(user, password, nodeName, uuid, reg_value);
     } else if (command.equals("get_res")) {
       boolean ret = true;
-      ret &= checkRequiredOption(aorName, "node_name");
-      ret &= checkRequiredOption(planName, "proj_name");
+      ret &= checkRequiredOption(nodeName, "node_name");
+      ret &= checkRequiredOption(tenantName, "proj_name");
       if (!ret)
         return;
-      hwCLIgetHardwareResource(user, password, aorName, planName, uuid);
+      hwCLIgetHardwareResource(user, password, nodeName, tenantName, uuid);
     } else if (command.equals("list_res")) {
       boolean ret = true;
-      ret &= checkRequiredOption(aorName, "node_name");
+      ret &= checkRequiredOption(nodeName, "node_name");
       if (!ret)
         return;
-      hwCLIlistAvailableResources(user, password, aorName);
+      hwCLIlistAvailableResources(user, password, nodeName);
     } else if (command.equals("prg_res")) {
       boolean ret = true;
-      ret &= checkRequiredOption(aorName, "node_name");
-      ret &= checkRequiredOption(planName, "proj_name");
+      ret &= checkRequiredOption(nodeName, "node_name");
+      ret &= checkRequiredOption(tenantName, "proj_name");
       ret &= checkRequiredOption(uuid, "uuid");
-      ret &= checkRequiredOption(keyFile, "key_file");
-      ret &= checkRequiredOption(imageFile, "image_file");
+      ret &= checkRequiredOption(uuid, "image_uuid");
       if (!ret)
         return;
-      hwCLIprogramHardwareResource(user, password, aorName, planName, uuid,
-          keyFile, imageFile);
+      hwCLIprogramHardwareResource(user, password, nodeName, tenantName, uuid,
+          imageUuid, null);
     } else if (command.equals("rel_res")) {
       boolean ret = true;
-      ret &= checkRequiredOption(aorName, "node_name");
-      ret &= checkRequiredOption(planName, "proj_name");
+      ret &= checkRequiredOption(nodeName, "node_name");
+      ret &= checkRequiredOption(tenantName, "proj_name");
       ret &= checkRequiredOption(uuid, "uuid");
       if (!ret)
         return;
-      hwCLIrelProcessingNode(user, password, aorName, planName, uuid);
+      hwCLIrelProcessingNode(user, password, nodeName, tenantName, uuid);
     } else if (command.equals("stat_res")) {
       boolean ret = true;
-      ret &= checkRequiredOption(aorName, "node_name");
-      ret &= checkRequiredOption(planName, "proj_name");
+      ret &= checkRequiredOption(nodeName, "node_name");
+      ret &= checkRequiredOption(tenantName, "proj_name");
       ret &= checkRequiredOption(uuid, "uuid");
       if (!ret)
         return;
-      hwCLIstatusResource(user, password, aorName, planName, uuid);
+      hwCLIstatusResource(user, password, nodeName, tenantName, uuid);
+    } else if (command.equals("connect_res")) {
+      boolean ret = true;
+      ret &= checkRequiredOption(nodeName, "node_name");
+      ret &= checkRequiredOption(tenantName, "proj_name");
+      ret &= checkRequiredOption(uuid, "uuid");
+      ret &= checkRequiredOption(portUuid, "port_uuid");
+      ret &= checkRequiredOption(networkUuid, "net_uuid");
+      if (!ret)
+        return;
+      hwCLIconnectResourceToNetwork(user, password, "", nodeName, tenantName,
+          resType, uuid, portUuid, networkUuid, null);
+    } else if (command.equals("disconnect_res")) {
+      boolean ret = true;
+      ret &= checkRequiredOption(nodeName, "node_name");
+      ret &= checkRequiredOption(tenantName, "proj_name");
+      ret &= checkRequiredOption(uuid, "uuid");
+      ret &= checkRequiredOption(portUuid, "port_uuid");
+      ret &= checkRequiredOption(networkUuid, "net_uuid");
+      ret &= checkRequiredOption(networkPortUuid, "netport_uuid");
+      if (!ret)
+        return;
+      hwCLIdisconnectResourceFromNetwork(user, password, "", nodeName,
+          tenantName, resType, uuid, portUuid, networkUuid, networkPortUuid,
+          null);
     } else if (command.equals("help")) {
       printHelp();
     } else {
@@ -193,7 +219,7 @@ public class CHwCLI extends SaviCLI {
   }
 
   private void hwCLIreadFromRegister(String user, String password,
-      String aorName, String uuid) {
+      String nodeName, String uuid) {
     String xmlString = "";
     if (uuid != null) {
       GenericOpRequestParams params = new GenericOpRequestParams();
@@ -214,11 +240,11 @@ public class CHwCLI extends SaviCLI {
         System.out.println("exception in getProceNode: " + ex.getMessage());
       }
     }
-    genericOperationResources(user, password, aorName, resType, xmlString);
+    genericOperationResources(user, password, nodeName, resType, xmlString);
   }
 
   private void hwCLIwriteToRegister(String user, String password,
-      String aorName, String uuid, String reg_value) {
+      String nodeName, String uuid, String reg_value) {
     String xmlString = "";
     if (uuid != null) {
       GenericOpRequestParams params = new GenericOpRequestParams();
@@ -242,7 +268,7 @@ public class CHwCLI extends SaviCLI {
         System.out.println("exception in getProceNode: " + ex.getMessage());
       }
     }
-    genericOperationResources(user, password, aorName, resType, xmlString);
+    genericOperationResources(user, password, nodeName, resType, xmlString);
   }
 
   // from http://mindprod.com/jgloss/hex.html
@@ -275,7 +301,7 @@ public class CHwCLI extends SaviCLI {
   }
 
   private void hwCLIinitializeHardware(String user, String password,
-      String aorName) {
+      String nodeName) {
     String xmlString = "";
     InitRequestParams params = new InitRequestParams();
     StringWriter stringWriter = new StringWriter();
@@ -292,11 +318,11 @@ public class CHwCLI extends SaviCLI {
     } catch (Exception ex) {
       System.out.println("exception in getProceNode: " + ex.getMessage());
     }
-    initResources(user, password, aorName, resType, xmlString);
+    initResources(user, password, nodeName, resType, xmlString);
   }
 
   private void hwCLIstatusResource(String user, String password,
-      String aorName, String planName, String uuid) {
+      String nodeName, String tenantName, String uuid) {
     String xmlString = "";
     StatusResponseParams params = new StatusResponseParams();
     StringWriter stringWriter = new StringWriter();
@@ -313,11 +339,12 @@ public class CHwCLI extends SaviCLI {
     } catch (Exception ex) {
       System.out.println("exception in getProceNode: " + ex.getMessage());
     }
-    statusResource(user, password, aorName, planName, resType, uuid, xmlString);
+    statusResource(user, password, nodeName, tenantName, resType, uuid,
+        xmlString);
   }
 
   public void hwCLIlistAvailableResources(String user, String password,
-      String aorName) {
+      String nodeName) {
     String xmlString = "";
     ListRequestParams params = new ListRequestParams();
     params.setVerbose(Boolean.TRUE);
@@ -335,11 +362,11 @@ public class CHwCLI extends SaviCLI {
     } catch (Exception ex) {
       System.out.println("exception in getProceNode: " + ex.getMessage());
     }
-    listResources(user, password, aorName, resType, xmlString);
+    listResources(user, password, nodeName, resType, xmlString);
   }
 
   public void hwCLIgetHardwareResource(String user, String password,
-      String aorName, String planName, String uuid) {
+      String nodeName, String tenantName, String uuid) {
     String xmlString = "";
     if (uuid != null) {
       GetRequestParams params = new GetRequestParams();
@@ -366,11 +393,11 @@ public class CHwCLI extends SaviCLI {
         System.out.println("exception in getProceNode: " + ex.getMessage());
       }
     }
-    getResource(user, password, aorName, planName, resType, xmlString);
+    getResource(user, password, nodeName, tenantName, resType, xmlString);
   }
 
   private void hwCLIrelProcessingNode(String user, String password,
-      String aorName, String planName, String uuid) {
+      String nodeName, String tenantName, String uuid) {
     String xmlString = "";
     if (uuid != null) {
       ReleaseRequestParams params = new ReleaseRequestParams();
@@ -390,59 +417,54 @@ public class CHwCLI extends SaviCLI {
         System.out.println("exception in getProceNode: " + ex.getMessage());
       }
     }
-    relResource(user, password, aorName, planName, resType, uuid, xmlString);
+    relResource(user, password, nodeName, tenantName, resType, uuid, xmlString);
+  }
+
+  public void hwCLIconnectResourceToNetwork(String user, String password,
+      String token, String nodeUuid, String tenantUuid, String resType,
+      String uuid, String portUuid, String networkUuid, String xmlString) {
+    ResourceConnectToNetworkResponse res;
+    res =
+        connectResourceToNetwork(user, password, token, nodeUuid, tenantUuid,
+            resType, uuid, portUuid, networkUuid, xmlString);
+    if (res.getResult().isSuccessful()) {
+      System.out.println("Your resource has been attached to this port: "
+          + res.getNetworkPortUuid());
+      System.out.println("in this network: " + networkUuid);
+    } else {
+      System.out.println("Error: " + res.getResult().getErrorStr());
+    }
+  }
+
+  public void hwCLIdisconnectResourceFromNetwork(String user, String password,
+      String token, String nodeUuid, String tenantUuid, String resType,
+      String uuid, String portUuid, String networkUuid, String networkPortUuid,
+      String xmlString) {
+    ResourceDisconnectFromNetworkResponse res;
+    res =
+        disconnectResourceFromNetwork(user, password, token, nodeUuid,
+            tenantUuid, resType, uuid, portUuid, networkUuid, networkPortUuid,
+            xmlString);
+    if (res.getResult().isSuccessful()) {
+      System.out.println("Your resource has been disconnected.");
+    } else {
+      System.out.println("Error: " + res.getResult().getErrorStr());
+    }
   }
 
   public void hwCLIprogramHardwareResource(String user, String password,
-      String aorName, String planName, String uuid, String keyFile,
-      String imageFile) {
-    StorageGetFileResponse resp =
-        getFile(user, password, aorName, planName, imageFile);
-    if (resp.getMetadata().isSuccessful()) {
-      String xmlString = "";
-      ProgramRequestParams params = new ProgramRequestParams();
-      byte[] bs;
-      try {
-        File f = new File("\\resources\\BEE2\\default.bit");
-        // create input stream
-        FileInputStream fin = new FileInputStream(f);
-        // get file length in bytes
-        int fl = (int) f.length();
-        // create file content buffer of corresponding size
-        bs = new byte[fl];
-        int readlen = 0, bp = 0;
-        // read buffer - 1024 bytes at a time
-        byte[] buf = new byte[1024];
-        // read in the file
-        while (bp < fl) {
-          readlen = fin.read(buf, 0, 1024);
-          System.arraycopy(buf, 0, bs, bp, readlen);
-          bp += readlen;
-        }
-        // close the stream
-        fin.close();
-        params.setBitstream(bs);
-      } catch (IOException ex) {
-        Logger.getLogger(CHwCLI.class.getName()).log(Level.SEVERE, null, ex);
-      }
-      try {
-        // params.setSecurityFile(getBytesFromFile(new File(keyFile)));
-        StringWriter stringWriter = new StringWriter();
-        JAXBContext context;
-        context = JAXBContext.newInstance(ProgramRequestParams.class);
-        Marshaller m = context.createMarshaller();
-        m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
-        m.marshal(
-            new JAXBElement(
-                new QName("", ProgramRequestParams.class.getName()),
-                ProgramRequestParams.class, params), stringWriter);
-        System.out.println("XMl is : " + stringWriter.toString());
-        xmlString = stringWriter.toString();
-        resourceProgram(user, password, aorName, planName, resType, uuid,
-            resp.getTuple(), xmlString);
-      } catch (Exception ex) {
-        System.out.println("exception in programProceNode: " + ex.getMessage());
-      }
+      String nodeName, String tenantName, String uuid, String imageUuid,
+      String xmlString) {
+    ResourceProgramResponse res;
+    res =
+        resourceProgram(user, password, nodeName, tenantName, resType, uuid,
+            imageUuid, xmlString);
+    // res = resourceProgram(user, password, nodeName, tenantName, resType,
+    // uuid, xmlString);
+    if (res.getResult().isSuccessful()) {
+      System.out.println("Program Successful!");
+    } else {
+      System.out.print("Error: " + res.getResult().getErrorStr());
     }
   }
 
