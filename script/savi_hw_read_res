@@ -1,0 +1,9 @@
+# Copyright (c) 2012, The SAVI Project.
+# Eliot J. Kang
+#!/bin/bash -f
+if [ -n "$1" ]
+then
+java -jar $SAVI_HW_JAR -u $SAVI_USER -p $SAVI_PASSWORD -c read_res -l $SAVI_LOCATION -j $SAVI_PROJECT -uu $1
+else
+java -jar $SAVI_HW_JAR -u $SAVI_USER -p $SAVI_PASSWORD -c read_res -l $SAVI_LOCATION -j $SAVI_PROJECT 
+fi
