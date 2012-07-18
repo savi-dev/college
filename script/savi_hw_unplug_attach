@@ -1,4 +1,0 @@
-# Copyright (c) 2012, The SAVI Project.
-# Eliot J. Kang
-#!/bin/bash -f
-java -jar $SAVI_HW_JAR -u $SAVI_USER -p $SAVI_PASSWORD -c disconnect_res -l $SAVI_LOCATION -j $SAVI_PROJECT -uu $1 -puu $2 -nuu $3 -npuu $4 -wsdl $CONTROL_WSDL

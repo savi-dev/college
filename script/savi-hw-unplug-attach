@@ -1,0 +1,18 @@
+#!/bin/bash -f
+# Copyright (c) 2012, The SAVI Project.
+# Eliot J. Kang
+
+# you need to run "source devi/savienvrc <username> <tenantname>"
+# before running this file
+if [[ -z $SAVI_USER ]]; then
+  echo "First, source devi/savienvrc <username> <tenantname>"
+  exit
+fi
+if [[ -z $1 || -z $2 || -z $3]]; then
+  echo "Usage: $0 <resource uuid> <port uuid> <network uuid> " \
+  "<network port uuid>"
+  exit
+fi
+java -jar $SAVI_HW_JAR -u $SAVI_USER -p $SAVI_PASSWORD -c disconnect_res \
+-l $SAVI_LOCATION -j $SAVI_PROJECT -uu $1 -puu $2 -nuu $3 -npuu $4 \
+-wsdl $CONTROL_WSDL

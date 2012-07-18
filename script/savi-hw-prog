@@ -1,0 +1,16 @@
+#!/bin/bash -f
+# Copyright (c) 2012, The SAVI Project.
+# Eliot J. Kang
+
+# you need to run "source devi/savienvrc <username> <tenantname>"
+# before running this file
+if [[ -z $SAVI_USER ]]; then
+  echo "First, source devi/savienvrc <username> <tenantname>"
+  exit
+fi
+if [[ -z $1 || -z $2 ]]; then
+  echo "Usage: $0 <resource uuid> <image uuid>"
+  exit
+fi
+java -jar $SAVI_HW_JAR -u $SAVI_USER -p $SAVI_PASSWORD -c prg_res \
+-l $SAVI_LOCATION -j $SAVI_PROJECT -wsdl $CONTROL_WSDL -uu $1 -iuu $2
