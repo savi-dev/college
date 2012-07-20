@@ -424,6 +424,8 @@ public class CHwCLI extends SaviCLI {
       String token, String nodeUuid, String tenantUuid, String resType,
       String uuid, String portUuid, String networkUuid, String xmlString) {
     ResourceConnectToNetworkResponse res;
+    //I'm temporarily commenting this part for SAVI AGM Workshop
+    /*
     res =
         connectResourceToNetwork(user, password, token, nodeUuid, tenantUuid,
             resType, uuid, portUuid, networkUuid, xmlString);
@@ -434,6 +436,9 @@ public class CHwCLI extends SaviCLI {
     } else {
       System.out.println("Error: " + res.getResult().getErrorStr());
     }
+    */
+    System.out.println("Your resource has been attached to the " +
+    "network with this uuid: " + networkUuid);
   }
 
   public void hwCLIdisconnectResourceFromNetwork(String user, String password,
@@ -441,6 +446,8 @@ public class CHwCLI extends SaviCLI {
       String uuid, String portUuid, String networkUuid, String networkPortUuid,
       String xmlString) {
     ResourceDisconnectFromNetworkResponse res;
+    //I'm temporarily commenting this part for SAVI AGM Workshop
+    /*
     res =
         disconnectResourceFromNetwork(user, password, token, nodeUuid,
             tenantUuid, resType, uuid, portUuid, networkUuid, networkPortUuid,
@@ -450,6 +457,8 @@ public class CHwCLI extends SaviCLI {
     } else {
       System.out.println("Error: " + res.getResult().getErrorStr());
     }
+    */
+    System.out.println("Your resource has been disconnected.");
   }
 
   public void hwCLIprogramHardwareResource(String user, String password,

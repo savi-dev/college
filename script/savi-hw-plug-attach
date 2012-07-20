@@ -8,7 +8,7 @@ if [[ -z $SAVI_USER ]]; then
   echo "First, source devi/savienvrc <username> <tenantname>"
   exit
 fi
-if [[ -z $1 || -z $2 || -z $3]]; then
+if [[ -z $1 || -z $2 || -z $3 ]]; then
   echo "Usage: $0 <resource uuid> <port uuid> <network uuid>"
   exit
 fi
